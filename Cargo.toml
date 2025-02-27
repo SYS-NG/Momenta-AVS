@@ -1,0 +1,55 @@
+[package]
+name = "momenta-avs"
+version = "0.1.0"
+edition = "2021"
+description = "Momenta AVS for EigenGames"
+authors = ["Steven Ng <szeyungng@gmail.com>"]
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/Momenta-Network"
+repository = "https://github.com/SYS-NG/momenta-avs"
+readme = "README.md"
+categories = ["cryptography", "cryptography::cryptocurrencies"]
+keywords = ["tangle", "blueprint", "avs"]
+rust-version = "1.81"
+
+[dependencies]
+# Gadget
+blueprint-sdk = { git = "https://github.com/tangle-network/gadget.git", default-features = false, features = ["std", "eigenlayer", "evm", "macros", "build"] }
+serde = { version = "1.0.208", features = ["derive"] }
+bollard = "0.18.1"  # Docker API client
+futures-util = "0.3.31"
+rand = "0.9"
+reqwest = { version = "0.12.12", features = ["multipart", "json"] }
+tokio = "1.43.0"
+uuid = { version = "1.0", features = ["v4"] }
+tokio-cron-scheduler = "0.13.0"
+thiserror = "2.0.11"
+async-trait = "0.1.86"
+twapi-v2 = "0.18.2"
+serde_json = "1.0.139"
+
+[build-dependencies]
+blueprint-sdk = { git = "https://github.com/tangle-network/gadget.git", default-features = false, features = ["std", "build"] }
+
+[features]
+default = ["std"]
+std = ["blueprint-sdk/std"]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "momenta-avs"
+path = "src/main.rs"
+
+[package.metadata.blueprint]
+manager = { Evm = "TangleTaskManager" }
+
+[[package.metadata.gadget.Native.sources]]
+owner = "SYS-NG"
+repo = "momenta-avs"
+tag = "0.1.0"
+binaries = [
+    { arch = "Amd64", os = "Linux", name = "amd64-linux-momenta-avs-gadget" },
+    { arch = "Arm64", os = "Linux", name = "arm64-linux-momenta-avs-gadget" },
+]
