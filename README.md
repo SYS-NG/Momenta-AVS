@@ -8,6 +8,14 @@ Momenta AVS is a decentralized platform built on EigenLayer that provides a trus
 
 The service enables users to submit audio files for analysis, which are then processed through specialized machine learning models to determine authenticity. The results are recorded on-chain, creating an immutable record of the analysis that can be referenced by applications, platforms, or legal entities requiring trusted verification.
 
+### 💼 Submodules
+
+All submodules/source code for EigenGames2025 can be accessed in this repository: [EigenGames2025\_Momenta-AVS](https://github.com/SYS-NG/EigenGames2025_Momenta-AVS).
+
+- **Audio-Checker-Docker**: The audio-check-docker source code is available here: [Audio-Checker-Docker](https://github.com/SYS-NG/Audio-Checker-Docker).
+- **Momenta-Inference-Docker**: The Momenta-inference-docker source code is available here: [Momenta-Inference-Docker](https://github.com/SYS-NG/Momenta-Inference-Docker).
+- **Audio-Upload-UI-Docker**: The UI implementation as a docker container is available here: [Audio-Upload-UI-Docker](https://github.com/SYS-NG/Audio-Upload-UI-Docker).
+
 ## 🏗️ Technical Architecture
 
 Momenta AVS consists of two primary components:
@@ -43,8 +51,8 @@ Both containers are automatically pulled and configured by the AVS on startup, w
 ## 🔬 How It Works
 
 ### Task Creation
-- An audio file reference is submitted for analysis (through the on-chain createNewTask function)
-- A task is created with a unique identifier and threshold requirements
+- The task creation mechanism is used to poll the UI for newly uploaded  audio file
+- A task is created with a unique identifier
 - Operators are notified of the new task via events
 
 ### Inference Processing
@@ -53,7 +61,7 @@ Both containers are automatically pulled and configured by the AVS on startup, w
 - Results include a prediction (real/fake) and a confidence score
 
 ### Result Recording
-- Inference results are submitted on-chain via the recordInferenceResult function
+- Inference results are submitted on-chain via the `recordInferenceResult` function
 - Results include the file reference, prediction, and confidence score
 - An event is emitted with the complete results for external consumption
 
@@ -70,20 +78,22 @@ Before you can run this project, you will need to have the following software in
 - Forge
 - Docker (for running the inference containers)
 
-You will also need to install cargo-tangle, the CLI tool for creating and deploying Blueprints:
+You will also need to install `cargo-tangle`, the CLI tool for creating and deploying Blueprints:
 
 ### Network Setup
 Momenta relies on a Docker network for container communication. Create it with:
 
 ### Configuration
-Check the settings.env file for the necessary contract addresses
+Check the `settings.env` file for the necessary contract addresses
 
 ### Deployment
 Deploy the Momenta AVS to a local devnet with:
 
-`cargo tangle blueprint deploy eigenlayer \
+```bash:main:Deployment
+cargo tangle blueprint deploy eigenlayer \
     --devnet \
-    --ordered-deployment`
+    --ordered-deployment
+```
 
 This command:
 - Compiles the Solidity contracts
@@ -91,15 +101,17 @@ This command:
 - Sets up the AVS registry
 - Configures the necessary permissions
 
-The deployment will output the addresses of the deployed contracts, including the crucial TASK_MANAGER_ADDRESS.
+The deployment will output the addresses of the deployed contracts, including the crucial `TASK_MANAGER_ADDRESS`.
 
 ### Running the Operator
 To start an operator node, run:
 
-`TASK_MANAGER_ADDRESS=<ADDRESS_FROM_OUTPUT> cargo tangle blueprint run \
+```bash:main:Running the Operator
+TASK_MANAGER_ADDRESS=<ADDRESS_FROM_OUTPUT> cargo tangle blueprint run \
     -p eigenlayer \
     -u <URL_FROM_DEPLOYMENT_OUTPUT> \
-    --keystore-path ./test-keystore`
+    --keystore-path ./test-keystore
+```
 
 This command:
 - Connects to the specified RPC endpoint
@@ -124,16 +136,16 @@ When an operator starts, it performs the following steps:
 - Prepares for task processing with the specified quorums
 
 #### Event Monitoring:
-- Begins listening for NewTaskCreated events from the TangleTaskManager contract
+- Begins listening for `NewTaskCreated` events from the `TangleTaskManager` contract
 - Processes tasks as they are created
 
 ## 💻 Code Architecture
 
 ### Solidity Contracts
 - **TangleTaskManager.sol**: The main contract responsible for:
-  - Creating and tracking tasks (createNewTask)
+  - Creating and tracking tasks (`createNewTask`)
   - Recording responses from operators
-  - Storing inference results (recordInferenceResult)
+  - Storing inference results (`recordInferenceResult`)
   - Managing challenges and disputes
 - **TangleServiceManager.sol**: Handles AVS registration with EigenLayer:
   - Interfaces with EigenLayer's AVS Directory
@@ -194,7 +206,7 @@ We welcome feedback and contributions to improve Momenta AVS. Please open an iss
 
 Licensed under either of
 - Apache License, Version 2.0
-  (LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+  ([LICENSE-APACHE](https://github.com/SYS-NG/EigenGames2025_Momenta-AVS/blob/main/LICENSE-APACHE) or [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
 - MIT license
-  (LICENSE-MIT or http://opensource.org/licenses/MIT)
+  ([LICENSE-MIT](https://github.com/SYS-NG/EigenGames2025_Momenta-AVS/blob/main/LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
 at your option.
