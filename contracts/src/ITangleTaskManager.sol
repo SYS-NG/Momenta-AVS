@@ -24,6 +24,13 @@ interface ITangleTaskManager {
         address indexed challenger
     );
 
+    event InferenceResultRecorded(
+        address indexed operator,
+        string file,
+        string prediction,
+        uint256 confidence
+    );
+
     // STRUCTS
     struct Task {
         uint256 taskIdentifier;

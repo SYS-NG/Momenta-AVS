@@ -6,7 +6,6 @@ use bollard::models::{HostConfig, PortBinding};
 use futures_util::stream::StreamExt;
 use std::collections::HashMap;
 use std::sync::Arc;
-use uuid;
 
 pub struct ContainerInfo {
     pub container_id: String,
@@ -28,7 +27,7 @@ impl DockerManager {
             &docker,
             "stevenmomenta/pytorch-audio-inference:latest",
             "5000",
-            "avs-inference"
+            "pytorch-audio-inference"
         ).await?;
 
         // Pull and start the checker container
@@ -89,10 +88,23 @@ impl DockerManager {
         let str_value: &str = string_value.as_str(); // Convert &String to &str
         exposed_ports.insert(str_value, HashMap::new());
 
-        blueprint_sdk::logging::info!("Creating container with unique name");
+        blueprint_sdk::logging::info!("Creating container with consistent name");
+        
+        // First try to remove any existing container with the same name
+        match docker.remove_container(
+            prefix,
+            Some(RemoveContainerOptions {
+                force: true,
+                ..Default::default()
+            }),
+        ).await {
+            Ok(_) => blueprint_sdk::logging::info!("Removed existing container named {}", prefix),
+            Err(e) => blueprint_sdk::logging::info!("No existing container to remove or error: {}", e),
+        }
+        
         let container = docker.create_container(
             Some(CreateContainerOptions {
-                name: format!("{}-{}", prefix, uuid::Uuid::new_v4()),
+                name: prefix.to_string(),
                 ..Default::default()
             }),
             Config {

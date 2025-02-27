@@ -262,4 +262,24 @@ contract TangleTaskManager is
     function getTaskResponseWindowBlock() external view returns (uint32) {
         return TASK_RESPONSE_WINDOW_BLOCK;
     }
+
+    function recordInferenceResult(
+        string calldata file,
+        string calldata prediction,
+        uint256 confidence
+    ) external {
+        // Add any access control if needed
+        
+        // Emit an event with the inference result
+        emit InferenceResultRecorded(
+            msg.sender,
+            file,
+            prediction,
+            confidence
+        );
+        
+        // Optionally store the result in a mapping or other data structure
+    }
+
+
 }
