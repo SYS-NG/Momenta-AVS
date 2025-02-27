@@ -184,7 +184,6 @@ The AVS manages Docker containers automatically:
 Momenta AVS leverages EigenLayer's economic security for trust:
 - **Operator Staking**: Operators stake ETH via EigenLayer, creating economic alignment
 - **ECDSA Signatures**: Cryptographic signatures ensure result integrity
-- **Threshold Consensus**: Multiple operators must agree on results
 - **Challenge Mechanism**: Results can be challenged if fraud is suspected
 
 ## 📬 Feedback and Contributions
