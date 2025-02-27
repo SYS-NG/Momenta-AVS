@@ -14,8 +14,8 @@ Momenta AVS consists of two primary components:
 
 ### On-chain Components (Solidity)
 - Smart contracts for task management, result verification, and coordination
-- BLS signature aggregation for operator consensus
-- Recording inference results with confidence scores
+- ECDSA for Operator signature
+- Recording inference results with confidence scores and signed by Operators
 
 ### Off-chain Components (Rust)
 - Event listeners and task processors
@@ -58,9 +58,9 @@ Both containers are automatically pulled and configured by the AVS on startup, w
 - An event is emitted with the complete results for external consumption
 
 ### Operator Consensus
-- Multiple operators perform the same analysis and submit their signatures
-- BLS signature aggregation ensures consensus among operators
-- Threshold signing ensures that a majority of operators agree on the result
+- Multiple operators perform the same analysis and submit their signatures (Validation through Redundancy)
+- ECDSA signatures are used to sign stored inference results to the chain
+- Optimistic with the option to challenge recorded inference result
 
 ## 🚀 Getting Started
 
@@ -76,11 +76,14 @@ You will also need to install cargo-tangle, the CLI tool for creating and deploy
 Momenta relies on a Docker network for container communication. Create it with:
 
 ### Configuration
-Check the settings.env file for the necessary contract addresses:
-- Ensure you have the necessary BLS keystore for operator authentication
+Check the settings.env file for the necessary contract addresses
 
 ### Deployment
 Deploy the Momenta AVS to a local devnet with:
+
+`cargo tangle blueprint deploy eigenlayer \
+    --devnet \
+    --ordered-deployment`
 
 This command:
 - Compiles the Solidity contracts
@@ -93,9 +96,13 @@ The deployment will output the addresses of the deployed contracts, including th
 ### Running the Operator
 To start an operator node, run:
 
+`TASK_MANAGER_ADDRESS=<ADDRESS_FROM_OUTPUT> cargo tangle blueprint run \
+    -p eigenlayer \
+    -u <URL_FROM_DEPLOYMENT_OUTPUT> \
+    --keystore-path ./test-keystore`
+
 This command:
 - Connects to the specified RPC endpoint
-- Loads the operator BLS keys from the keystore
 - Pulls and starts the Docker containers for inference
 - Begins listening for incoming tasks
 - Processes any new tasks using the inference containers
@@ -105,7 +112,6 @@ This command:
 When an operator starts, it performs the following steps:
 
 #### Keystore Loading:
-- Loads BLS keys from the specified keystore path
 - Validates key ownership and permissions
 
 #### Docker Container Initialization:
@@ -127,7 +133,6 @@ When an operator starts, it performs the following steps:
 - **TangleTaskManager.sol**: The main contract responsible for:
   - Creating and tracking tasks (createNewTask)
   - Recording responses from operators
-  - Validating consensus through BLS signatures
   - Storing inference results (recordInferenceResult)
   - Managing challenges and disputes
 - **TangleServiceManager.sol**: Handles AVS registration with EigenLayer:
@@ -141,7 +146,7 @@ When an operator starts, it performs the following steps:
   - Event handling for inference tasks
   - Task pre-processing
   - Response submission to blockchain
-  - BLS signature handling
+  - ECDSA signature handling
 - **src/context.rs**: Manages Docker containers and AVS context:
   - Initializes and configures Docker containers
   - Handles dynamic port mapping
@@ -178,7 +183,7 @@ The AVS manages Docker containers automatically:
 
 Momenta AVS leverages EigenLayer's economic security for trust:
 - **Operator Staking**: Operators stake ETH via EigenLayer, creating economic alignment
-- **BLS Signatures**: Cryptographic signatures ensure result integrity
+- **ECDSA Signatures**: Cryptographic signatures ensure result integrity
 - **Threshold Consensus**: Multiple operators must agree on results
 - **Challenge Mechanism**: Results can be challenged if fraud is suspected
 
