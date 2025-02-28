@@ -1,6 +1,6 @@
 # <h1 align="center"> Momenta AVS - Audio Deepfake Detection on EigenLayer 🎵🔍 </h1>
 
-A decentralized source of truth for audio deepfake detection powered by EigenLayer
+A decentralized source of truth for audio deepfake detection powered by EigenLayer & Tangle Network 
 
 ## 📚 Overview
 
@@ -17,6 +17,8 @@ All submodules/source code for EigenGames2025 can be accessed in this repository
 - **Audio-Upload-UI-Docker**: The UI implementation as a docker container is available here: [Audio-Upload-UI-Docker](https://github.com/SYS-NG/Audio-Upload-UI-Docker).
 
 ## 🏗️ Technical Architecture
+
+![Momenta AVS Technical Architecture](momenta-avs-technical-architecture.png)
 
 Momenta AVS consists of two primary components:
 
@@ -203,10 +205,5 @@ Momenta AVS leverages EigenLayer's economic security for trust:
 We welcome feedback and contributions to improve Momenta AVS. Please open an issue or submit a pull request on our GitHub repository.
 
 ## 📜 License
+This project is licensed under the [MIT License](LICENSE).
 
-Licensed under either of
-- Apache License, Version 2.0
-  ([LICENSE-APACHE](https://github.com/SYS-NG/EigenGames2025_Momenta-AVS/blob/main/LICENSE-APACHE) or [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
-- MIT license
-  ([LICENSE-MIT](https://github.com/SYS-NG/EigenGames2025_Momenta-AVS/blob/main/LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
-at your option.

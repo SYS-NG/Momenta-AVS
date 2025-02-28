@@ -31,6 +31,12 @@ interface ITangleTaskManager {
         uint256 confidence
     );
 
+    event ConsensusEstablished(
+        string file,
+        string prediction,
+        uint256 voteCount
+    );
+
     // STRUCTS
     struct Task {
         uint256 taskIdentifier;

@@ -46,6 +46,12 @@ contract TangleTaskManager is
     address public aggregator;
     address public generator;
 
+    // Add these mappings to the state variables section of the contract
+    mapping(string => mapping(string => uint256)) public predictionVotes; // file -> prediction -> vote count
+    mapping(string => uint256) public totalVotesPerFile; // file -> total votes
+    mapping(string => string) public majorityPrediction; // file -> winning prediction
+    mapping(string => bool) public fileValidated; // file -> whether consensus is established
+
     /* MODIFIERS */
     modifier onlyAggregator() {
         require(msg.sender == aggregator, "Aggregator must be the caller");
@@ -182,9 +188,9 @@ contract TangleTaskManager is
         BN254.G1Point[] memory pubkeysOfNonSigningOperators
     ) external {
         uint32 referenceTaskIndex = taskResponse.referenceTaskIndex;
-        uint256 taskIdentifier = task.taskIdentifier;
+        bytes memory filepath = task.filepath;
         
-        // some logical checks
+        // Basic validation checks (unchanged)
         require(
             allTaskResponses[referenceTaskIndex] != bytes32(0),
             "Task hasn't been responded to yet"
@@ -198,7 +204,6 @@ contract TangleTaskManager is
             taskSuccesfullyChallenged[referenceTaskIndex] == false,
             "The response to this task has already been challenged successfully."
         );
-
         require(
             uint32(block.number) <=
                 taskResponseMetadata.taskResponsedBlock +
@@ -206,32 +211,44 @@ contract TangleTaskManager is
             "The challenge period for this task has already expired."
         );
 
-        // In the original code, there was a validation that squared output matches
-        // For our audio classification, we would need a different validation mechanism
-        // For simplicity, we'll just assume all valid responses are correct
-        // In a real implementation, you would need to define what makes a response "correct"
-        bool isResponseCorrect = true;  // Simplified for our example
-
-        // if response was correct, no slashing happens so we return
-        if (isResponseCorrect == true) {
+        // Convert filepath to string for lookup
+        string memory file = string(filepath);
+        
+        // Check if we have established majority consensus for this file
+        bool hasConsensus = fileValidated[file];
+        
+        // If no consensus yet, we can't validate
+        if (!hasConsensus) {
             emit TaskChallengedUnsuccessfully(referenceTaskIndex, msg.sender);
             return;
         }
+        
+        // Get the recorded prediction for this task
+        // Note: In a real implementation, you would need to access the prediction 
+        // that was recorded for this specific task/response
+        string memory recordedPrediction = ""; // This should be fetched from task response
+        
+        // Validate against majority consensus
+        bool isResponseCorrect = keccak256(abi.encodePacked(recordedPrediction)) == 
+                                  keccak256(abi.encodePacked(majorityPrediction[file]));
 
-        // get the list of hash of pubkeys of operators who weren't part of the task response submitted by the aggregator
+        // If response matches majority consensus, no slashing needed
+        if (isResponseCorrect) {
+            emit TaskChallengedUnsuccessfully(referenceTaskIndex, msg.sender);
+            return;
+        }
+        
+        // Response is incorrect according to majority consensus - continue with challenge
+
+        // Process non-signing operators (unchanged)
         bytes32[] memory hashesOfPubkeysOfNonSigningOperators = new bytes32[](
             pubkeysOfNonSigningOperators.length
         );
         for (uint i = 0; i < pubkeysOfNonSigningOperators.length; i++) {
-            hashesOfPubkeysOfNonSigningOperators[
-                i
-            ] = pubkeysOfNonSigningOperators[i].hashG1Point();
+            hashesOfPubkeysOfNonSigningOperators[i] = pubkeysOfNonSigningOperators[i].hashG1Point();
         }
 
-        // verify whether the pubkeys of "claimed" non-signers supplied by challenger are actually non-signers as recorded before
-        // currently inlined, as the MiddlewareUtils.computeSignatoryRecordHash function was removed from BLSSignatureChecker
-        // in this PR: https://github.com/Layr-Labs/eigenlayer-contracts/commit/c836178bf57adaedff37262dff1def18310f3dce#diff-8ab29af002b60fc80e3d6564e37419017c804ae4e788f4c5ff468ce2249b4386L155-L158
-        // TODO(samlaf): contracts team will add this function back in the BLSSignatureChecker, which we should use to prevent potential bugs from code duplication
+        // Verify non-signers match recorded hash (unchanged)
         bytes32 signatoryRecordHash = keccak256(
             abi.encodePacked(
                 task.taskCreatedBlock,
@@ -243,7 +260,7 @@ contract TangleTaskManager is
             "The pubkeys of non-signing operators supplied by the challenger are not correct."
         );
 
-        // get the address of operators who didn't sign
+        // Get addresses of operators who didn't sign (unchanged)
         address[] memory addresssOfNonSigningOperators = new address[](
             pubkeysOfNonSigningOperators.length
         );
@@ -253,7 +270,7 @@ contract TangleTaskManager is
             ).pubkeyHashToOperator(hashesOfPubkeysOfNonSigningOperators[i]);
         }
 
-        // the task response has been challenged successfully
+        // Mark the task as successfully challenged
         taskSuccesfullyChallenged[referenceTaskIndex] = true;
 
         emit TaskChallengedSuccessfully(referenceTaskIndex, msg.sender);
@@ -263,23 +280,41 @@ contract TangleTaskManager is
         return TASK_RESPONSE_WINDOW_BLOCK;
     }
 
+    // Add this new function to establish consensus for a file
+    function establishConsensus(string calldata file) external {
+        require(!fileValidated[file], "Consensus already established for this file");
+        require(totalVotesPerFile[file] > 0, "No votes recorded for this file");
+        
+        string memory winningPrediction = "";
+        uint256 highestVotes = 0;
+        
+        // In a real implementation, you would iterate through all predictions
+        // to find the one with the highest vote count
+        // This is simplified for demonstration
+        
+        // Set the majority prediction
+        majorityPrediction[file] = winningPrediction;
+        fileValidated[file] = true;
+        
+        emit ConsensusEstablished(file, winningPrediction, highestVotes);
+    }
+
+    // Modify recordInferenceResult to track votes
     function recordInferenceResult(
         string calldata file,
         string calldata prediction,
         uint256 confidence
     ) external {
-        // Add any access control if needed
+        // Increment vote count for this prediction
+        predictionVotes[file][prediction] += 1;
+        totalVotesPerFile[file] += 1;
         
-        // Emit an event with the inference result
+        // Emit the event as before
         emit InferenceResultRecorded(
             msg.sender,
             file,
             prediction,
             confidence
         );
-        
-        // Optionally store the result in a mapping or other data structure
     }
-
-
 }

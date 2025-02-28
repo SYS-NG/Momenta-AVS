@@ -144,8 +144,8 @@ pub async fn inference(
             let confidence = inference_result["confidence"].as_f64().unwrap_or(0.0);
             
             blueprint_sdk::logging::info!(
-                "\n=== BLOCKCHAIN SUBMISSION ===\nFile: {}\nPrediction: {}\nConfidence: {:.4}%\n===========================",
-                file, prediction, confidence * 100.0
+                "\n===SUBMISSION TO CHAIN===\nFile: {}\nPrediction: {}\n===========================",
+                file, prediction
             );
             
             // Get the ECDSA key and provider - using the correct API methods with traits in scope
@@ -189,7 +189,7 @@ pub async fn inference(
                 // Keep this commented out
                 // "Transaction submitted with hash: {:?}",
                 // tx_hash // Print the PendingTransactionBuilderObject
-                "✅ Transaction submitted: {:#x}",
+                "✅ Transaction submitted: {:#x}\n===========================",
                 tx_hash.tx_hash()
             );
         }
